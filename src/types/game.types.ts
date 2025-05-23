@@ -32,7 +32,6 @@ export interface RiskCard {
   type: RiskType;
   name: string;
   damage: number;
-  speed: number; // Скорость движения (меньше = быстрее)
   target: ProtectableType;
   description: string;
   imageUrl?: string;

@@ -1,6 +1,5 @@
 import { FC } from 'react';
 import { InsuranceCard as InsuranceCardType, ProtectableType } from '@/types/game.types';
-import Image from 'next/image';
 
 interface InsuranceCardProps {
   card: InsuranceCardType;
@@ -37,9 +36,22 @@ const InsuranceCard: FC<InsuranceCardProps> = ({
     ? 'bg-gray-500 cursor-not-allowed opacity-50'
     : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 cursor-pointer';
 
+  // Выбор эмодзи в зависимости от типа страховки
+  const getInsuranceEmoji = () => {
+    switch (card.type) {
+      case 'osago': return '🚗';
+      case 'kasko': return '🚙';
+      case 'property': return '🏠';
+      case 'health': return '❤️';
+      case 'travel': return '🌍';
+      case 'vip': return '👑';
+      default: return '🛡️';
+    }
+  };
+
   return (
     <div 
-      className={`w-56 h-80 bg-gradient-to-b from-gray-800 to-gray-900 rounded-xl border-2 ${cardBorderClass} flex flex-col shadow-lg transition-transform transform hover:scale-105`}
+      className={`w-56 h-80 bg-gradient-to-b from-gray-800 to-gray-900 rounded-xl border-2 ${cardBorderClass} flex flex-col shadow-lg transition-transform relative z-10 m-2`}
     >
       {/* Card Header */}
       <div className="bg-gradient-to-r from-blue-900 to-indigo-900 p-3 rounded-t-lg border-b border-gray-700">
@@ -51,22 +63,12 @@ const InsuranceCard: FC<InsuranceCardProps> = ({
       </div>
       
       {/* Card Image (if available) */}
-      <div className="flex-shrink-0 h-28 bg-gray-800 flex items-center justify-center overflow-hidden">
-        {card.imageUrl ? (
-          <div className="relative w-full h-full">
-            <Image
-              src={card.imageUrl}
-              alt={card.name}
-              fill
-              sizes="(max-width: 768px) 100vw, 33vw"
-              className="object-contain p-2"
-            />
-          </div>
-        ) : (
-          <div className="w-16 h-16 bg-blue-800/50 rounded-full flex items-center justify-center">
-            <span className="text-3xl text-white/70">🛡️</span>
-          </div>
-        )}
+      <div className="flex-shrink-0 h-36 bg-gray-800 flex items-center justify-center overflow-hidden">
+        <div className="w-16 h-16 bg-blue-800/50 rounded-full flex items-center justify-center">
+          <span className="text-3xl text-white/70">
+            {getInsuranceEmoji()}
+          </span>
+        </div>
       </div>
       
       {/* Card Info */}
@@ -82,25 +84,33 @@ const InsuranceCard: FC<InsuranceCardProps> = ({
         </div>
         
         {/* Card Description */}
-        <div className="mt-1 text-xs text-gray-400 flex-grow">
+        <div className="mt-2 text-sm text-gray-400 flex-grow overflow-hidden">
           {card.description}
         </div>
         
         {/* Special Effect */}
         {card.specialEffect && (
-          <div className="mt-1 text-xs text-blue-400 italic">
+          <div className="mt-2 text-sm text-blue-400 italic">
             {card.specialEffect}
           </div>
         )}
         
-        {/* Use Button */}
-        <button
-          className={`mt-2 w-full rounded-lg py-1.5 px-3 text-white text-sm font-semibold transition-colors ${buttonClasses}`}
-          onClick={() => onUse && !disabled && onUse(card)}
-          disabled={disabled}
-        >
-          Использовать
-        </button>
+        {/* Use Button - исправлено наложение */}
+        <div className="w-full py-1 relative z-10 mt-auto">
+          <button
+            className={`w-full rounded-lg py-1.5 px-3 text-white text-sm font-semibold transition-colors ${buttonClasses}`}
+            onClick={() => {
+              if (onUse && !disabled) {
+                console.log("Используем карту:", card.name);
+                onUse(card);
+              }
+            }}
+            disabled={disabled}
+            style={{ position: 'relative', zIndex: 50 }}
+          >
+            Использовать
+          </button>
+        </div>
       </div>
     </div>
   );

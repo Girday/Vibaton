@@ -1,11 +1,13 @@
+'use client';
+
 import { FC } from 'react';
 import { RiskCard as RiskCardType, ProtectableType } from '@/types/game.types';
-import Image from 'next/image';
 
 interface RiskCardProps {
   card: RiskCardType;
   position?: { x: number; y: number };
   progress?: number; // 0 to 100 - how close risk is to its target
+  onDefeat?: (card: RiskCardType) => void; // Callback when risk is defeated
 }
 
 const RiskCard: FC<RiskCardProps> = ({
@@ -32,42 +34,48 @@ const RiskCard: FC<RiskCardProps> = ({
     
   // Class for severity based on damage
   const getSeverityClass = () => {
-    if (card.damage >= 600) return 'from-red-900 to-red-700';
-    if (card.damage >= 400) return 'from-orange-800 to-orange-600';
+    if (card.damage >= 150) return 'from-red-900 to-red-700';
+    if (card.damage >= 90) return 'from-orange-800 to-orange-600';
     return 'from-yellow-700 to-yellow-500';
+  };
+
+  // Выбор эмодзи в зависимости от типа риска
+  const getRiskEmoji = () => {
+    switch (card.type) {
+      case 'car_accident': return '💥';
+      case 'fire': return '🔥';
+      case 'illness': return '🤒';
+      case 'theft': return '🕵️';
+      case 'flood': return '💧';
+      case 'fraud': return '💰';
+      default: return '⚠️';
+    }
   };
 
   return (
     <div 
-      className={`w-40 h-64 bg-gradient-to-b ${getSeverityClass()} rounded-xl border-2 border-gray-700 flex flex-col shadow-lg transition-all`}
-      style={positionStyle}
+      className={`w-40 h-70 bg-gradient-to-b ${getSeverityClass()} rounded-xl border-2 border-gray-700 flex flex-col shadow-lg relative`}
+      style={{ 
+        ...positionStyle,
+        margin: '0.5rem',
+        zIndex: 0 
+      }}
     >
       {/* Card Header */}
       <div className="bg-black/30 p-2 rounded-t-lg border-b border-gray-700">
         <h3 className="text-white font-bold text-base truncate">{card.name}</h3>
-        <div className="flex justify-between items-center mt-1">
+        <div className="flex items-center mt-1">
           <span className="text-white text-xs">Урон: {card.damage}</span>
-          <div className="text-xs text-gray-300">Скорость: {card.speed}</div>
         </div>
       </div>
       
-      {/* Card Image (if available) */}
+      {/* Card Image */}
       <div className="flex-shrink-0 h-24 bg-black/20 flex items-center justify-center overflow-hidden">
-        {card.imageUrl ? (
-          <div className="relative w-full h-full">
-            <Image
-              src={card.imageUrl}
-              alt={card.name}
-              fill
-              sizes="(max-width: 768px) 100vw, 33vw"
-              className="object-contain p-2"
-            />
-          </div>
-        ) : (
-          <div className="w-12 h-12 bg-red-800/50 rounded-full flex items-center justify-center">
-            <span className="text-2xl text-white/70">⚠️</span>
-          </div>
-        )}
+        <div className="w-12 h-12 bg-red-800/50 rounded-full flex items-center justify-center">
+          <span className="text-2xl text-white/70">
+            {getRiskEmoji()}
+          </span>
+        </div>
       </div>
       
       {/* Card Info */}
@@ -77,7 +85,7 @@ const RiskCard: FC<RiskCardProps> = ({
         </div>
         
         {/* Card Description */}
-        <div className="mt-1 text-xs text-white/80 flex-grow">
+        <div className="mt-1 text-xs text-white/80 flex-grow overflow-auto">
           {card.description}
         </div>
         
@@ -91,9 +99,20 @@ const RiskCard: FC<RiskCardProps> = ({
         {/* Progress bar */}
         <div className="mt-2 w-full bg-gray-700 rounded-full h-1.5">
           <div 
-            className="bg-white h-1.5 rounded-full" 
+            className={`h-1.5 rounded-full transition-all ${
+              progress && progress > 80 ? 'bg-red-400 animate-pulse' : 'bg-white'
+            }`}
             style={{ width: `${progress}%` }}
           />
+        </div>
+        
+        {/* Distance indicator */}
+        <div className="mt-1 text-xs text-white text-center">
+          {progress && progress < 100 
+            ? `${100 - progress}% до цели` 
+            : progress === 100 
+              ? "Атакует!" 
+              : "Приближается..." }
         </div>
       </div>
     </div>
